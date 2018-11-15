@@ -101,8 +101,7 @@ class WC_Klarna_Payments_Subscriptions {
 	public function set_customer_token_for_order( $order_id = null, $customer_token ) {
 		$wc_order = wc_get_order( $order_id );
 		if ( $this->check_if_subscription( $order_id ) ) {
-			$subcriptions        = wcs_get_subscriptions_for_order( $order_id );
-				$recurring_token = $klarna_order->recurring_token;
+			$subcriptions = wcs_get_subscriptions_for_order( $order_id );
 			foreach ( $subcriptions as $subcription ) {
 				update_post_meta( $subcription->get_id(), '_kp_customer_token', $customer_token );
 			}
