@@ -188,12 +188,24 @@ class WC_Gateway_Klarna_Payments extends WC_Payment_Gateway {
 	/**
 	 * Constructor
 	 */
-	public function __construct() {
+	public function __construct( $klarna_country = null ) {
 		$this->id                 = 'klarna_payments';
 		$this->method_title       = __( 'Klarna Payments', 'klarna-payments-for-woocommerce' );
 		$this->method_description = __( 'Get the flexibility to pay over time with Klarna!', 'klarna-payments-for-woocommerce' );
 		$this->has_fields         = true;
-		$this->supports           = apply_filters( 'wc_klarna_payments_supports', array( 'products' ) ); // Make this filterable.
+		$this->supports           = apply_filters(
+			'wc_klarna_payments_supports',
+			array(
+				'products',
+				'subscriptions',
+				'subscription_cancellation',
+				'subscription_suspension',
+				'subscription_reactivation',
+				'subscription_amount_changes',
+				'subscription_date_changes',
+				'multiple_subscriptions',
+			)
+		); // Make this filterable.
 
 		$base_location      = wc_get_base_location();
 		$this->shop_country = $base_location['country'];
@@ -205,12 +217,15 @@ class WC_Gateway_Klarna_Payments extends WC_Payment_Gateway {
 		$this->init_settings();
 
 		// Get setting values.
-		// $this->title    = $this->get_option( 'title' );
+		$this->title    = $this->get_option( 'title' );
 		$this->enabled  = $this->get_option( 'enabled' );
 		$this->testmode = 'yes' === $this->get_option( 'testmode' );
 		$this->logging  = 'yes' === $this->get_option( 'logging' );
-
-		$this->set_klarna_country();
+		if ( null === $klarna_country ) {
+			$this->set_klarna_country();
+		} else {
+			$this->klarna_country = $klarna_country;
+		}
 		$this->set_environment();
 		$this->set_credentials();
 
@@ -460,6 +475,13 @@ class WC_Gateway_Klarna_Payments extends WC_Payment_Gateway {
 			return false;
 		}
 
+		if ( class_exists( 'WC_Subscriptions_Cart' ) && WC_Subscriptions_Cart::cart_contains_subscription() ) {
+			$available_recurring_countries = array( 'SE', 'DE', 'AT', 'NL' );
+			if ( ! in_array( WC()->customer->get_billing_country(), $available_recurring_countries ) ) {
+				return false;
+			}
+		}
+
 		return true;
 	}
 
@@ -509,7 +531,6 @@ class WC_Gateway_Klarna_Payments extends WC_Payment_Gateway {
 			// Try to update the session, if it fails try to create new session.
 			$update_request_url = $this->server_base . 'payments/v1/sessions/' . WC()->session->get( 'klarna_payments_session_id' );
 			$update_response    = $this->update_session_request( $update_request_url, $request_args );
-
 			if ( is_wp_error( $update_response ) ) { // If update session failed try to create new session.
 				$this->unset_session_values();
 				$this->create_session( $request_args );
@@ -819,7 +840,7 @@ class WC_Gateway_Klarna_Payments extends WC_Payment_Gateway {
 
 		$order    = wc_get_order( $order_id );
 		$response = $this->place_order( $order_id, $auth_token ); // Place order.
-
+		do_action( 'kp_wc_process_payment_before_redirect', $order_id, $auth_token );
 		return $this->process_klarna_response( $response, $order );
 	}
 
@@ -989,7 +1010,6 @@ class WC_Gateway_Klarna_Payments extends WC_Payment_Gateway {
 		} else {
 			$shipping_address = $billing_address;
 		}
-
 		$request_url  = $this->server_base . 'payments/v1/authorizations/' . $auth_token . '/order';
 		$request_args = array(
 			'headers'    => array(
@@ -1252,5 +1272,63 @@ class WC_Gateway_Klarna_Payments extends WC_Payment_Gateway {
 		return array(
 			'type' => $type,
 		);
+	}
+
+	/**
+	 * Get the current Klarna session.
+	 */
+	public function get_klarna_session() {
+		$args            = array(
+			'headers'    => array(
+				'Authorization' => 'Basic ' . base64_encode( $this->merchant_id . ':' . htmlspecialchars_decode( $this->shared_secret ) ),
+				'Content-Type'  => 'application/json',
+			),
+			'user-agent' => apply_filters( 'http_headers_useragent', 'WordPress/' . get_bloginfo( 'version' ) . '; ' . get_bloginfo( 'url' ) ) . ' - KP:' . WC_KLARNA_PAYMENTS_VERSION . ' - PHP Version: ' . phpversion() . ' - Krokedil',
+		);
+		$get_session_url = $this->server_base . 'payments/v1/sessions/' . WC()->session->get( 'klarna_payments_session_id' );
+		$session         = wp_safe_remote_get( $get_session_url, $args );
+		$session         = wp_remote_retrieve_body( $session );
+		return json_decode( $session, true );
+	}
+
+	/**
+	 * Creates the customer token for subscriptions
+	 */
+	public function create_customer_token_request( $body, $auth_token ) {
+		$args            = array(
+			'headers'    => array(
+				'Authorization' => 'Basic ' . base64_encode( $this->merchant_id . ':' . htmlspecialchars_decode( $this->shared_secret ) ),
+				'Content-Type'  => 'application/json',
+			),
+			'user-agent' => apply_filters( 'http_headers_useragent', 'WordPress/' . get_bloginfo( 'version' ) . '; ' . get_bloginfo( 'url' ) ) . ' - KP:' . WC_KLARNA_PAYMENTS_VERSION . ' - PHP Version: ' . phpversion() . ' - Krokedil',
+			'body'       => json_encode( $body ),
+		);
+		$get_session_url = $this->server_base . 'payments/v1/authorizations/' . $auth_token . '/customer-token';
+
+		$customer_token = wp_safe_remote_post( $get_session_url, $args );
+		$customer_token = wp_remote_retrieve_body( $customer_token );
+
+		return json_decode( $customer_token, true );
+	}
+
+	/**
+	 * Creates recurring order with Klarna.
+	 */
+	public function create_recurring_order( $renewal_order, $recurring_token ) {
+		$body             = new Klarna_Payments_Order_Lines_Order( $renewal_order );
+		$body             = $body->order_lines();
+		$args             = array(
+			'headers'    => array(
+				'Authorization' => 'Basic ' . base64_encode( $this->merchant_id . ':' . htmlspecialchars_decode( $this->shared_secret ) ),
+				'Content-Type'  => 'application/json',
+			),
+			'user-agent' => apply_filters( 'http_headers_useragent', 'WordPress/' . get_bloginfo( 'version' ) . '; ' . get_bloginfo( 'url' ) ) . ' - KP:' . WC_KLARNA_PAYMENTS_VERSION . ' - PHP Version: ' . phpversion() . ' - Krokedil',
+			'body'       => json_encode( $body ),
+		);
+		$create_order_url = $this->server_base . 'customer-token/v1/tokens/' . $recurring_token . '/order';
+		$response         = wp_safe_remote_post( $create_order_url, $args );
+		$response         = wp_remote_retrieve_body( $response );
+
+		return json_decode( $response, true );
 	}
 }
