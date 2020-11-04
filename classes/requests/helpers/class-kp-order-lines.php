@@ -303,6 +303,31 @@ class KP_Order_Lines {
 				$this->order_lines[] = $gift_card;
 			}
 		}
+
+		/**
+		* PW Gift Cards compatibility.
+		*/
+		if ( class_exists( 'PW_Gift_Card' ) ) {
+			$gift_card_data = WC()->session->get( 'pw-gift-card-data' );
+
+			foreach ( $gift_card_data['gift_cards'] as $pw_code => $pw_amount ) {
+				$gift_card_mount = $pw_amount * ( -100 );
+
+				$gift_card = array(
+					'type'                  => 'gift_card',
+					'reference'             => $pw_code,
+					'name'                  => __( 'Gift card', 'klarna-payments-for-woocommerce' ),
+					'quantity'              => 1,
+					'tax_rate'              => 0,
+					'total_discount_amount' => 0,
+					'total_tax_amount'      => 0,
+					'unit_price'            => $gift_card_mount,
+					'total_amount'          => $gift_card_mount,
+				);
+
+				$this->order_lines[] = $gift_card;
+			}
+		};
 	}
 
 	/**
@@ -397,7 +422,7 @@ class KP_Order_Lines {
 	private function get_order_shipping( $order_id = false ) {
 		$order = wc_get_order( $order_id );
 		if ( $order->get_shipping_method() ) {
-			$shipping            = array(
+			$shipping = array(
 				'type'             => 'shipping_fee',
 				'reference'        => $this->get_order_shipping_reference( $order ),
 				'name'             => ( '' !== $order->get_shipping_method() ) ? $order->get_shipping_method() : $shipping_name = __( 'Shipping', 'klarna-payments-for-woocommerce' ),
