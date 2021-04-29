@@ -2,9 +2,9 @@ import Oauth from "oauth-1.0a";
 import crypto from "crypto";
 import axios from "axios";
 import { customerKey, customerSecret } from "../config/config";
-import kcoURLS from "../helpers/kcoURLS";
+import kpURLS from "../helpers/kpURLS";
 
-const { API_BASE_URL } = kcoURLS;
+const { API_BASE_URL } = kpURLS;
 const httpMethods = {
 	get: "GET",
 	post: "POST",
