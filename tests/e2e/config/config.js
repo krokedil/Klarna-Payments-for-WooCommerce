@@ -26,8 +26,6 @@ const settingsArray = {
 		test_shared_secret_us: "",
 		shipping_section: "",
 		allow_separate_shipping: "no",
-		shipping_methods_in_iframe:
-			customerData.shippingSelectors.iframe.iframeShipping,
 		shipping_details: "",
 		checkout_section: "",
 		send_product_urls: "yes",
