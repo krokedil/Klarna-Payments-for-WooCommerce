@@ -61,8 +61,7 @@ export const freeShippingMethodTarget = shippingSel.targets.freeShippingTarget;
 export const flatRateMethodTarget = shippingSel.targets.flatRateTarget;
 
 export const creditPaymentMethod = paymentSelectedMethod.creditMethod;
-export const debitPaymentMethod = paymentSelectedMethod.debitMethod;
-export const invoicePaymentMethod = paymentSelectedMethod.invoiceMethod;
+export const payLaterPaymentMethod = paymentSelectedMethod.payLaterMethod
 
 export const customerName = customerData.first_name;
 export const customerLastname = customerData.last_name;
