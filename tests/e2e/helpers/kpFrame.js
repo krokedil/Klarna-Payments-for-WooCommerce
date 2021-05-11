@@ -1,3 +1,14 @@
+
+/**
+ *
+ * @param page
+ * @param name
+ * @returns {Promise<*|Frame>}
+ */
+ const loadIFrame = async (page, name) =>
+ page.frames().find((frame) => frame.name() === name);
+
+
 /**
  *
  * @param frame
@@ -60,5 +71,6 @@
 };
 
 export default {
+    loadIFrame,
     submitBillingForm,
 }
