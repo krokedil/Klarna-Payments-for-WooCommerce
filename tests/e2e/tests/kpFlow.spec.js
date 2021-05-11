@@ -27,9 +27,8 @@ import {
 	/**
 	 * Payment methods
 	 */
-	invoicePaymentMethod,
-	debitPaymentMethod,
 	creditPaymentMethod,
+	payLaterPaymentMethod,
 
 	/**
 	 * Coupons
@@ -96,21 +95,11 @@ const shippingMethod = freeShippingMethod;
 const customerType = "company";
 
 // Payment method selection
-const selectedPaymentMethod = invoicePaymentMethod;
+const selectedPaymentMethod = creditPaymentMethod;
 
 // Coupon selection
 const appliedCoupons = [couponPercent];
 
-//------------- 1
-/**
- *
- * @param page
- * @param name
- * @returns {Promise<*|Frame>}
- */
- const loadIFrame = async (page, name) =>
- page.frames().find((frame) => frame.name() === name);
-//------------- 1XXX
 
 
 
@@ -157,47 +146,36 @@ describe("KP", () => {
 
 
 
-		await page.waitForSelector('label[for="payment_method_klarna_payments_pay_later"]');
-		await page.evaluate(
-			(cb) => cb.click(),
-			await page.$('label[for="payment_method_klarna_payments_pay_later"]')
-		);
+		console.log(selectedPaymentMethod)
+//*************************************************** */ PAY LATER
+		if(selectedPaymentMethod==="pay_later"){
+
+			// --- PAY LATER
+			await page.waitForSelector('label[for="payment_method_klarna_payments_pay_later"]');
+			await page.evaluate(
+				(cb) => cb.click(),
+				await page.$('label[for="payment_method_klarna_payments_pay_later"]')
+			);
+
+		await page.waitForTimeout(500);
+
+				// // ------- BILLING FORM
+				await kpFrame.submitBillingForm(page, billingData);
+				await page.waitForTimeout(2000);
 
 
-//---------------------o 2
-
-await kpFrame.submitBillingForm(page, billingData);
-
-//---------------------x 2
-
-
-		await page.waitForTimeout(2000);
-
-		const framePayLater = await loadIFrame(
+		const framePayLater = await kpFrame.loadIFrame(
 			page,
 			"klarna-pay-later-main"
 		);
 
-		// await framePayLater.waitForSelector('label[for="installments-invoice|-1"]');
-		// await framePayLater.evaluate(
-		// 	(cb) => cb.click(),
-		// 	await framePayLater.$('label[for="installments-pix|3504"]')
-		// );
-
-		// await page.waitForTimeout(500);
-
+		await framePayLater.waitForSelector('label[for="installments-invoice|-1"]');
 		await framePayLater.evaluate(
 			(cb) => cb.click(),
 			await framePayLater.$('label[for="installments-invoice|-1"]')
 		);
 
-		await framePayLater.evaluate(
-			(cb) => cb.click(),
-			await framePayLater.$('label[for="installments-invoice|-1"]')
-		);
-
-		// await page.waitForTimeout(500);
-
+		// PAY LATER COMPLETE
 		await page.evaluate(
 			(cb) => cb.click(),
 			await page.$('input[type="checkbox"][name="terms"][id="terms"]')
@@ -210,10 +188,12 @@ await kpFrame.submitBillingForm(page, billingData);
 			await page.$('button[type="submit"][name="woocommerce_checkout_place_order"][id="place_order"]')
 		);
 
-		await page.waitForTimeout(1000);
+		await page.waitForTimeout(2000)
 
-		// PIN NUMBER
-		const framePayLaterFullScreen = await loadIFrame(
+// //---- vvv
+// 		// PIN NUMBER
+
+		const framePayLaterFullScreen = await kpFrame.loadIFrame(
 			page,
 			"klarna-pay-later-fullscreen"
 		);
@@ -227,14 +207,70 @@ await kpFrame.submitBillingForm(page, billingData);
 			(cb) => cb.click(),
 			await framePayLaterFullScreen.$('input[name="nationalIdentificationNumber"]')
 		);
-		await framePayLaterFullScreen.type('input[name="nationalIdentificationNumber"]', "410321-9202");
+
+		await framePayLaterFullScreen.type('input[name="nationalIdentificationNumber"]', pinNumber);
 
 		await framePayLaterFullScreen.evaluate(
 			(cb) => cb.click(),
 			await framePayLaterFullScreen.$('button[id="purchase-approval-form-continue-button"]')
 		);
 
+		await page.waitForTimeout(5000)
+// //---- ^^^
+
+
+
+//*************************************************** */ CREDIT CARD
+		} else if (selectedPaymentMethod === 'credit'){
+			// --- PAY CARD
+			await page.waitForSelector('label[for="payment_method_klarna_payments_pay_now"]');
+			await page.evaluate(
+				(cb) => cb.click(),
+				await page.$('label[for="payment_method_klarna_payments_pay_now"]')
+			);
+
+			await page.waitForTimeout(500);
+			// // ------- BILLING FORM
+			await kpFrame.submitBillingForm(page, billingData);
+			await page.waitForTimeout(2000);
+
+			// --- CARD MECHANISM ------------------------------- OOO
+			const framePayCard = await kpFrame.loadIFrame(
+				page,
+				"payment-gateway-frame"
+			);
+
+			await framePayCard.waitForSelector('input[id="cardNumber"]');
+			await framePayCard.evaluate(
+				(cb) => cb.click(),
+				await framePayCard.$('input[id="cardNumber"]')
+			);
+
+			await framePayCard.type('input[id="cardNumber"]',cardNumber);
+			await framePayCard.type('input[id="expire"]', "1130");
+			await framePayCard.type('input[id="securityCode"]', "123");
+			// --- CARD MECHANISM ----------------------------------------------- XXX
+
+			// CARD COMPLETE
+			await page.evaluate(
+				(cb) => cb.click(),
+				await page.$('input[type="checkbox"][name="terms"][id="terms"]')
+			);
+
+			await page.waitForTimeout(500);
+
+			await page.evaluate(
+				(cb) => cb.click(),
+				await page.$('button[type="submit"][name="woocommerce_checkout_place_order"][id="place_order"]')
+			);
+
+		}
+
+		await page.waitForTimeout(4000);
+
 		const h1 = await page.$eval("h1", (e) => e.textContent);
-		expect(h1).toBe("Checkout");
+		console.log(h1)
+
+		expect(h1).toBe("Order received");
 	}, 190000);
 });
