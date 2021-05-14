@@ -19,8 +19,8 @@ import kpURLS from './kpURLS';
 	const productSelector = productId;
 
 	try {
-		await page.goto(`${kcoURLS.ADD_TO_CART}${productSelector}`);
-		await page.goto(kcoURLS.SHOP);
+		await page.goto(`${kpURLS.ADD_TO_CART}${productSelector}`);
+		await page.goto(kpURLS.SHOP);
 	} catch {
 		// Proceed
 	}
