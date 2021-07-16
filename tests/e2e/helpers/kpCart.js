@@ -6,7 +6,7 @@
  * @returns {Promise<void>}
  */
 
-import kpURLS from './kpURLS';
+import kpURLS from "./kpURLS";
 
 /**
  *
@@ -15,7 +15,7 @@ import kpURLS from './kpURLS';
  * @param page
  * @param productId
  */
- const addSingleProductToCart = async (page, productId) => {
+const addSingleProductToCart = async (page, productId) => {
 	const productSelector = productId;
 
 	try {
@@ -33,7 +33,7 @@ import kpURLS from './kpURLS';
  * @param products
  * @returns {Promise<void>}
  */
- const addMultipleProductsToCart = async (page, products) => {
+const addMultipleProductsToCart = async (page, products) => {
 	const timer = products.length;
 
 	await page.waitForTimeout(timer * 800);
