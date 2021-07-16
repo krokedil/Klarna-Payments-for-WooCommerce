@@ -39,7 +39,7 @@
     "docker:down": "docker-compose down -v",
     "jettison": "jest --detectOpenHandles --forceExit",
     "wp:install": "node ./cli/install.js",
-    "e2e:test": "yarn docker:up && yarn wp:install && yarn test"
+    "e2e:test": "yarn docker:up && yarn wp:install && yarn jettison"
   },
   "version": "1.0.0"
 }
