@@ -185,8 +185,10 @@ export const couponTotalWithShipping = customerData.coupons.charged_shipping;
 export const { pinNumber } = customerData;
 export const { companyNumber } = customerData;
 export const { cardNumber } = customerData;
+export const { cardSecurityCode } = customerData;
 
 export const timeOutTime = config.timeoutTime;
+export const expireDate = config.expireDate;
 export const { billing } = customerData;
 export const { shipping } = customerData;
 export const customerAPIData = {
