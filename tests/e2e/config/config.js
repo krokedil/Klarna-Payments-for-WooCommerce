@@ -6,45 +6,116 @@ export const productIdData = config.products.product_id;
 export const siteUrl = config.url;
 
 const settingsArray = {
-	woocommerce_kco_settings: {
+	woocommerce_klarna_payments_settings: {
 		enabled: "yes",
-		title: "Klarna",
-		description: "Klarna Checkout for WooCommerce Test",
-		select_another_method_text: "",
+		title: "Klarna Payments In Progress",
 		testmode: "yes",
 		logging: "yes",
-		credentials_eu: "",
-		merchant_id_eu: "",
-		shared_secret_eu: "",
-		test_merchant_id_eu: customerData.klarnaCredentials.test_merchant_id_eu,
-		test_shared_secret_eu:
-			customerData.klarnaCredentials.test_shared_secret_eu,
 		credentials_us: "",
 		merchant_id_us: "",
 		shared_secret_us: "",
 		test_merchant_id_us: "",
 		test_shared_secret_us: "",
-		shipping_section: "",
-		allow_separate_shipping: "no",
-		shipping_details: "",
-		checkout_section: "",
 		send_product_urls: "yes",
-		dob_mandatory: "no",
-		display_privacy_policy_text: "no",
-		add_terms_and_conditions_checkbox: "no",
-		allowed_customer_types: "B2CB",
-		title_mandatory: "yes",
-		prefill_consent: "yes",
-		quantity_fields: "yes",
-		color_settings_title: "",
-		color_button: "",
-		color_button_text: "",
-		color_checkbox: "",
-		color_checkbox_checkmark: "",
-		color_header: "",
-		color_link: "",
 		radius_border: "",
 		add_to_email: "no",
+		customer_type: "b2c",
+
+		credentials_au: "",
+		merchant_id_au: "",
+		shared_secret_au: "",
+		test_merchant_id_au: "",
+		test_shared_secret_au: "",
+
+		credentials_at: "",
+		merchant_id_at: "",
+		shared_secret_at: "",
+		test_merchant_id_at: "",
+		test_shared_secret_at: "",
+
+		credentials_be: "",
+		merchant_id_be: "",
+		shared_secret_be: "",
+		test_merchant_id_be: "",
+		test_shared_secret_be: "",
+
+		credentials_ca: "",
+		merchant_id_ca: "",
+		shared_secret_ca: "",
+		test_merchant_id_ca: "",
+		test_shared_secret_ca: "",
+
+		credentials_dk: "",
+		merchant_id_dk: "",
+		shared_secret_dk: "",
+		test_merchant_id_dk: "",
+		test_shared_secret_dk: "",
+
+		credentials_de: "",
+		merchant_id_de: "",
+		shared_secret_de: "",
+		test_merchant_id_de: "",
+		test_shared_secret_de: "",
+
+		credentials_fi: "",
+		merchant_id_fi: "",
+		shared_secret_fi: "",
+		test_merchant_id_fi: "",
+		test_shared_secret_fi: "",
+
+		credentials_fr: "",
+		merchant_id_fr: "",
+		shared_secret_fr: "",
+		test_merchant_id_fr: "",
+		test_shared_secret_fr: "",
+
+		credentials_it: "",
+		merchant_id_it: "",
+		shared_secret_it: "",
+		test_merchant_id_it: "",
+		test_shared_secret_it: "",
+
+		credentials_nl: "",
+		merchant_id_nl: "",
+		shared_secret_nl: "",
+		test_merchant_id_nl: "",
+		test_shared_secret_nl: "",
+
+		credentials_no: "",
+		merchant_id_no: "",
+		shared_secret_no: "",
+		test_merchant_id_no: "",
+		test_shared_secret_no: "",
+
+		credentials_nz: "",
+		merchant_id_nz: "",
+		shared_secret_nz: "",
+		test_merchant_id_nz: "",
+		test_shared_secret_nz: "",
+
+		credentials_es: "",
+		merchant_id_es: "",
+		shared_secret_es: "",
+		test_merchant_id_es: "",
+		test_shared_secret_es: "",
+
+		credentials_ch: "",
+		merchant_id_ch: "",
+		shared_secret_ch: "",
+		test_merchant_id_ch: "",
+		test_shared_secret_ch: "",
+
+		credentials_gb: "",
+		merchant_id_gb: "",
+		shared_secret_gb: "",
+		test_merchant_id_gb: "",
+		test_shared_secret_gb: "",
+
+		credentials_se: "",
+		merchant_id_se: "",
+		shared_secret_se: "",
+		test_merchant_id_se: "K512807_cabfc48430bc",
+		test_shared_secret_se: "CX2CyVdsqKQ6VF8W",
 	},
 };
 
@@ -61,7 +132,7 @@ export const freeShippingMethodTarget = shippingSel.targets.freeShippingTarget;
 export const flatRateMethodTarget = shippingSel.targets.flatRateTarget;
 
 export const creditPaymentMethod = paymentSelectedMethod.creditMethod;
-export const payLaterPaymentMethod = paymentSelectedMethod.payLaterMethod
+export const payLaterPaymentMethod = paymentSelectedMethod.payLaterMethod;
 
 export const customerName = customerData.first_name;
 export const customerLastname = customerData.last_name;
@@ -112,6 +183,7 @@ export const couponTotalFreeShipping = customerData.coupons.free_shipping;
 export const couponTotalWithShipping = customerData.coupons.charged_shipping;
 
 export const { pinNumber } = customerData;
+export const { companyNumber } = customerData;
 export const { cardNumber } = customerData;
 
 export const timeOutTime = config.timeoutTime;
@@ -132,4 +204,4 @@ export const userCredentials = customerData.credentialsAndSelectors;
 export const { klarnaOrderEndpoint } = adminData;
 export const { puppeteerOptions } = config;
 
-export const KCOSettingsArray = settingsArray;
+export const KPSettingsArray = settingsArray;
